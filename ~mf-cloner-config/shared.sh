@@ -1,0 +1,33 @@
+# Sourced by the other scripts; not meant to be run directly.
+
+source "$(dirname "${BASH_SOURCE[0]}")/data.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/env.local.sh"
+
+# Sets the terminal tab title for the given folder.
+set_tab() {
+  set_terminal_tab_header "$tab_title_prefix $1 - $agent_name"
+}
+
+# Portable between GNU (Linux) and BSD (macOS) coreutils.
+file_mtime() { stat -c %Y "$1" 2>/dev/null || stat -f %m "$1"; }
+format_epoch() { date -d "@$1" "$2" 2>/dev/null || date -r "$1" "$2"; }
+
+# Prints one tab-separated line per clone: last access (epoch), folder, branch, PR number, PR state.
+# Empty fields are "-" (tabs are IFS whitespace, so `read` would collapse them).
+scan_clones() {
+  local gitdir dir branch last pr
+  while IFS= read -r gitdir; do
+    dir="${gitdir%/.git}"
+    branch=$(git -C "$dir" branch --show-current)
+    [ -n "$branch" ] || branch="(detached)"
+
+    # .git/index is touched by checkout/add/commit/status, so it tracks the last time the clone was used
+    last=$(file_mtime "$gitdir/index" 2>/dev/null || git -C "$dir" log -1 --format=%ct)
+
+    pr=$(gh pr list --repo "$repo" --head "$branch" --state all --limit 1 \
+      --json number,state --jq '.[0] | select(.) | "\(.number)\t\(.state | ascii_downcase)"')
+
+    printf '%s\t%s\t%s\t%s\n' "$last" "$dir" "$branch" "${pr:--	-}"
+  # Clones live at most 3 folders deep (e.g. lz/fix/foo), so their .git is at depth 4
+  done < <(find . -maxdepth 4 -name .git -print -prune)
+}
