@@ -1,13 +1,46 @@
 #!/usr/bin/env bash
 # Generates data.sh from data.example.sh by asking for each value.
+#
+# Remote install (run it in the folder where your clones should live):
+#   bash <(curl -fsSL https://raw.githubusercontent.com/lucas-zimerman/multibranch-cloner/main/~mf-cloner-config/install.sh)
+# or: curl -fsSL <same url> | bash
 set -euo pipefail
 
-dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+base_url="${MB_CLONER_URL:-https://raw.githubusercontent.com/lucas-zimerman/multibranch-cloner/main}"
+config_dirname="~mf-cloner-config"
+
+# Prompts must read from the terminal even when the script itself is piped into bash
+tty_in=/dev/stdin
+[ -t 0 ] || tty_in=/dev/tty
+
+dir="$(cd "$(dirname "${BASH_SOURCE[0]:-.}")" 2>/dev/null && pwd || true)"
+
+# Not running from a checkout of the repo (curl): download the files into the current folder
+if [ ! -f "$dir/data.example.sh" ]; then
+  command -v curl >/dev/null || { echo "Error: curl is required" >&2; exit 1; }
+  files=(
+    clear.sh clone.sh list.sh open.sh
+    "$config_dirname/shared.sh"
+    "$config_dirname/data.example.sh"
+    "$config_dirname/env.example.sh"
+    "$config_dirname/kde/konsole.sh"
+  )
+  echo "Downloading mb-cloner into $PWD ..."
+  for f in "${files[@]}"; do
+    mkdir -p "$(dirname "$f")"
+    # "~" must be percent-encoded in the URL path
+    curl -fsSL "$base_url/${f//\~/%7E}" -o "$f" || { echo "Error: failed to download $f" >&2; exit 1; }
+  done
+  chmod +x clear.sh clone.sh list.sh open.sh
+  dir="$PWD/$config_dirname"
+  chmod +x "$dir"/*.sh 2>/dev/null || true
+fi
+
 example="$dir/data.example.sh"
 target="$dir/data.sh"
 
 if [ -e "$target" ]; then
-  read -r -p "data.sh already exists. Overwrite? [y/N] " answer
+  read -r -p "data.sh already exists. Overwrite? [y/N] " answer < "$tty_in"
   [[ "$answer" =~ ^[Yy]$ ]] || { echo "Aborted." >&2; exit 1; }
 fi
 
@@ -29,7 +62,7 @@ set_var() {
 ask() {
   local value=""
   while [ -z "$value" ]; do
-    read -r -p "$1: " value
+    read -r -p "$1: " value < "$tty_in"
   done
   printf '%s' "$value"
 }
@@ -52,7 +85,7 @@ select choice in "${colors[@]}"; do
   fi
   set_var tab_color "$choice"
   break
-done
+done < "$tty_in"
 
 set_var git_name "$(ask "Git name")"
 set_var git_email "$(ask "Git email")"
