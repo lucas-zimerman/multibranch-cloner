@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# mb: multibranch cloner. One full clone per branch/task, each with its own agent session.
+set -euo pipefail
+
+self="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
+root="$(cd "$(dirname "$self")" && pwd)"
+lib="$root/.mb-cloner"
+
+usage() {
+  cat <<USAGE
+Usage: mb <command> [args]
+
+Commands:
+  clone <folder>   Clone the repo into <folder> on a branch named <folder>, then start the agent
+  open <folder>    Start the agent inside an existing clone
+  list             List clones with last access, branch and PR
+  clear [-y]       Remove clones whose PR was merged
+  update [-y]      Download the latest version of these scripts
+USAGE
+}
+
+cmd="${1:-}"
+case "$cmd" in
+  clone|open|list|clear|update) ;;
+  ""|-h|--help|help) usage; exit 0 ;;
+  *) echo "Unknown command: $cmd" >&2; usage >&2; exit 1 ;;
+esac
+
+# clone/open run the agent and the repo setup, which need the interactive shell environment (PATH, aliases)
+case "$cmd" in
+  clone|open) [[ $- == *i* ]] || exec bash -i "$self" "$@" ;;
+esac
+shift
+
+if [ "$cmd" != update ] && [ ! -f "$lib/data.sh" ]; then
+  echo "Not configured yet. Run: $lib/install.sh" >&2
+  exit 1
+fi
+
+source "$lib/shared.sh"
+source "$lib/commands/$cmd.sh"
+
+# Clones live next to this script
+cd "$root"
+
+"cmd_$cmd" "$@"

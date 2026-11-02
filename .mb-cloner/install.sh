@@ -2,12 +2,12 @@
 # Generates data.sh from data.example.sh by asking for each value.
 #
 # Remote install (run it in the folder where your clones should live):
-#   bash <(curl -fsSL https://raw.githubusercontent.com/lucas-zimerman/multibranch-cloner/main/~mf-cloner-config/install.sh)
+#   bash <(curl -fsSL https://raw.githubusercontent.com/lucas-zimerman/multibranch-cloner/main/.mb-cloner/install.sh)
 # or: curl -fsSL <same url> | bash
 set -euo pipefail
 
 base_url="${MB_CLONER_URL:-https://raw.githubusercontent.com/lucas-zimerman/multibranch-cloner/main}"
-config_dirname="~mf-cloner-config"
+config_dirname=".mb-cloner"
 
 # Prompts must read from the terminal even when the script itself is piped into bash
 tty_in=/dev/stdin
@@ -18,22 +18,17 @@ dir="$(cd "$(dirname "${BASH_SOURCE[0]:-.}")" 2>/dev/null && pwd || true)"
 # Not running from a checkout of the repo (curl): download the files into the current folder
 if [ ! -f "$dir/data.example.sh" ]; then
   command -v curl >/dev/null || { echo "Error: curl is required" >&2; exit 1; }
-  files=(
-    clear.sh clone.sh list.sh open.sh
-    "$config_dirname/shared.sh"
-    "$config_dirname/data.example.sh"
-    "$config_dirname/env.example.sh"
-    "$config_dirname/kde/konsole.sh"
-  )
   echo "Downloading mb-cloner into $PWD ..."
-  for f in "${files[@]}"; do
+  mkdir -p "$config_dirname"
+  curl -fsSL "$base_url/$config_dirname/manifest" -o "$config_dirname/manifest" \
+    || { echo "Error: failed to download the manifest from $base_url" >&2; exit 1; }
+  while IFS= read -r f; do
+    [ -n "$f" ] || continue
     mkdir -p "$(dirname "$f")"
-    # "~" must be percent-encoded in the URL path
-    curl -fsSL "$base_url/${f//\~/%7E}" -o "$f" || { echo "Error: failed to download $f" >&2; exit 1; }
-  done
-  chmod +x clear.sh clone.sh list.sh open.sh
+    curl -fsSL "$base_url/$f" -o "$f" || { echo "Error: failed to download $f" >&2; exit 1; }
+    case "$f" in mb|*.sh) chmod +x "$f" ;; esac
+  done < "$config_dirname/manifest"
   dir="$PWD/$config_dirname"
-  chmod +x "$dir"/*.sh 2>/dev/null || true
 fi
 
 example="$dir/data.example.sh"
@@ -130,4 +125,7 @@ post_clone_setup() {
 The function runs inside the freshly cloned folder, so use relative commands.
 Keep it idempotent and add a short comment above each step.
 ------------------------------------------------------------
+
+Then start working with:
+  ./mb clone <folder>     (see ./mb help)
 PROMPT

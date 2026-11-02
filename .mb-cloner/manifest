@@ -1,0 +1,12 @@
+mb
+.mb-cloner/manifest
+.mb-cloner/install.sh
+.mb-cloner/shared.sh
+.mb-cloner/data.example.sh
+.mb-cloner/env.example.sh
+.mb-cloner/kde/konsole.sh
+.mb-cloner/commands/clone.sh
+.mb-cloner/commands/open.sh
+.mb-cloner/commands/list.sh
+.mb-cloner/commands/clear.sh
+.mb-cloner/commands/update.sh
