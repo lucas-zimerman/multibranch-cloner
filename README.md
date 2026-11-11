@@ -5,6 +5,13 @@ Every clone is isolated (its own `.git`), so tools that dislike git worktrees (F
 
 `mb clone my-task` clones your repo into `my-task/`, checks out a branch named `my-task` (continuing it if it already exists on the remote, otherwise starting from the remote's default branch), runs your repo-specific setup, and starts your agent. In Konsole, the tab gets a title and color.
 
+## Requirements
+
+- git
+- gh
+- curl (Linux/MacOS)
+- powershell (Windows)
+
 ## Install
 
 Run the installer in the folder where your clones should live (they are created next to `mb`).
@@ -15,15 +22,11 @@ Run the installer in the folder where your clones should live (they are created 
 bash <(curl -fsSL https://raw.githubusercontent.com/lucas-zimerman/multibranch-cloner/main/.mb-cloner/install.sh)
 ```
 
-Requires `git`, `gh` (for `list` and `clear`) and `curl`. Tested on Linux/KDE; written to be portable to macOS.
-
 ### Windows
 
 ```powershell
 irm https://raw.githubusercontent.com/lucas-zimerman/multibranch-cloner/main/.mb-cloner/install.ps1 | iex
 ```
-
-Requires `git` and `gh` (for `list` and `clear`). Works with Windows PowerShell 5.1 or PowerShell 7+. Windows uses a parallel set of `.ps1` files next to the bash scripts; both can live in the same folder.
 
 ### What the installer asks
 
@@ -39,55 +42,15 @@ and writes your answers to `.mb-cloner/data.sh` (Windows: `data.ps1`). When it f
 ## Usage
 
 ```bash
-./mb clone <folder>   # clone into <folder> on a branch named <folder>, then start the agent
-./mb open <folder>    # start the agent inside an existing clone
-./mb list             # clones with last access, branch and PR
-./mb clear [-y]       # remove clones whose PR was merged
-./mb update [-y]      # download the latest scripts (shows a diff first)
+mb clone <folder>   # clone into <folder> on a branch named <folder>, then start the agent
+mb open <folder>    # start the agent inside an existing clone
+mb list             # clones with last access, branch and PR
+mb clear [-y]       # remove clones whose PR was merged
+mb update [-y]      # download the latest scripts (shows a diff first)
 ```
 
-On Windows the same commands work in PowerShell (`./mb` runs `mb.ps1`) and in Git Bash (runs the bash scripts). `mb update` on Windows updates the files listed in `.mb-cloner\manifest.windows`.
-
-- **cmd:** use `mb` or `.\mb` (cmd doesn't accept `./`); this runs `mb.cmd`.
 - **"running scripts is disabled":** Windows PowerShell 5.1 blocks scripts by default. Either allow local scripts once with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, or use `.\mb.cmd`, which starts PowerShell with `-ExecutionPolicy Bypass`.
-- **Tab title:** set via the window title (Windows Terminal, conhost, VS Code), which also sets `CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1` so Claude Code keeps it. The tab color can't be set from a script on Windows, so `tab_color` is stored but unused there.
-
-## Layout
-
-```
-mb                       the command
-.mb-cloner/
-  shared.sh              helpers shared by all commands
-  commands/              one file per subcommand
-  kde/konsole.sh         Konsole tab title and color
-  data.example.sh        template for data.sh
-  env.example.sh         template for env.local.sh
-  install.sh             interactive setup
-  manifest               list of files `mb update` and the installer download
-  data.sh                generated: your answers (git-ignored)
-  env.local.sh           generated: machine setup + post_clone_setup() (git-ignored)
-```
-
-Windows counterparts (same folder):
-
-```
-mb.cmd, mb.ps1           the command (cmd launcher / PowerShell entry point)
-.mb-cloner/
-  shared.ps1             helpers shared by all commands
-  commands/*.ps1         one file per subcommand
-  windows/terminal.ps1   tab title
-  data.example.ps1       template for data.ps1
-  env.example.ps1        template for env.local.ps1
-  install.ps1            interactive setup
-  manifest.windows       list of files `mb update` and the installer download
-  data.ps1               generated: your answers (git-ignored)
-  env.local.ps1          generated: machine setup + post_clone_setup (git-ignored)
-```
-
-`data.sh` and `env.local.sh` are never overwritten by `mb update`. If a new version adds a variable to `data.example.sh`, `mb update` warns that your `data.sh` is missing it.
 
 ## Customizing
 
-- **Post-clone steps:** edit `post_clone_setup()` in `.mb-cloner/env.local.sh`. It runs inside the new clone right before the agent starts.
-- **Other terminals:** `set_terminal_tab_header` lives in `.mb-cloner/kde/konsole.sh`; `install.sh` only loads it inside Konsole.
-- **Different download source for `update`/install:** set `MB_CLONER_URL` to a raw base URL.
+- **Post-clone steps:** edit `post_clone_setup()` in `.mb-cloner/env.local.sh/ps1`. It runs inside the new clone right before the agent starts.
