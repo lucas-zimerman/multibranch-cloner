@@ -7,11 +7,25 @@ Every clone is isolated (its own `.git`), so tools that dislike git worktrees (F
 
 ## Install
 
-Run this in the folder where your clones should live (they are created next to `mb`):
+Run the installer in the folder where your clones should live (they are created next to `mb`).
+
+### Linux/macOS
 
 ```bash
 bash <(curl -fsSL https://raw.githubusercontent.com/lucas-zimerman/multibranch-cloner/main/.mb-cloner/install.sh)
 ```
+
+Requires `git`, `gh` (for `list` and `clear`) and `curl`. Tested on Linux/KDE; written to be portable to macOS.
+
+### Windows
+
+```powershell
+irm https://raw.githubusercontent.com/lucas-zimerman/multibranch-cloner/main/.mb-cloner/install.ps1 | iex
+```
+
+Requires `git` and `gh` (for `list` and `clear`). Works with Windows PowerShell 5.1 or PowerShell 7+. Windows uses a parallel set of `.ps1` files next to the bash scripts; both can live in the same folder.
+
+### What the installer asks
 
 It downloads the scripts, then asks for:
 
@@ -20,7 +34,7 @@ It downloads the scripts, then asks for:
 - your git name and email
 - the agent name and the command that starts it (e.g. `Claude` / `claude`)
 
-and writes your answers to `.mb-cloner/data.sh`. When it finishes it prints a prompt: give it to your agent so it analyses the repo and fills in `post_clone_setup()` (toolchain, dependencies, bootstrap, ...) in `.mb-cloner/env.local.sh`.
+and writes your answers to `.mb-cloner/data.sh` (Windows: `data.ps1`). When it finishes it prints a prompt: give it to your agent so it analyses the repo and fills in `post_clone_setup()` (toolchain, dependencies, bootstrap, ...) in `.mb-cloner/env.local.sh` (Windows: `env.local.ps1`). Both generated files are git-ignored.
 
 ## Usage
 
@@ -32,26 +46,11 @@ and writes your answers to `.mb-cloner/data.sh`. When it finishes it prints a pr
 ./mb update [-y]      # download the latest scripts (shows a diff first)
 ```
 
-Requires `git`, `gh` (for `list` and `clear`) and `curl`. Tested on Linux/KDE; written to be portable to macOS.
-
-## Windows (PowerShell)
-
-The Linux/macOS bash scripts are kept as they are; Windows has a parallel set of `.ps1` files that live in the same folder. Works with Windows PowerShell 5.1 or PowerShell 7+.
-
-Install (run it in the folder where your clones should live):
-
-```powershell
-irm https://raw.githubusercontent.com/lucas-zimerman/multibranch-cloner/main/.mb-cloner/install.ps1 | iex
-```
-
-This writes `.mb-cloner\data.ps1` and `.mb-cloner\env.local.ps1` (git-ignored). Put your repo setup in `post_clone_setup` (a PowerShell function) in `env.local.ps1`.
-
-Usage is the same as on Linux/macOS, e.g. `./mb clone <folder>` (see [Usage](#usage)). In PowerShell `./mb` runs `mb.ps1`; in Git Bash it runs the bash script. `mb update` on Windows updates the files listed in `.mb-cloner\manifest.windows`.
+On Windows the same commands work in PowerShell (`./mb` runs `mb.ps1`) and in Git Bash (runs the bash scripts). `mb update` on Windows updates the files listed in `.mb-cloner\manifest.windows`.
 
 - **cmd:** use `mb` or `.\mb` (cmd doesn't accept `./`); this runs `mb.cmd`.
 - **"running scripts is disabled":** Windows PowerShell 5.1 blocks scripts by default. Either allow local scripts once with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, or use `.\mb.cmd`, which starts PowerShell with `-ExecutionPolicy Bypass`.
-
-Requires `git` and `gh` (for `list` and `clear`). The tab title is set via the window title (Windows Terminal, conhost, VS Code); the tab color can't be set from a script on Windows, so `tab_color` is stored but unused there. Setting the title also sets `CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1` so Claude Code keeps the title instead of replacing it.
+- **Tab title:** set via the window title (Windows Terminal, conhost, VS Code), which also sets `CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1` so Claude Code keeps it. The tab color can't be set from a script on Windows, so `tab_color` is stored but unused there.
 
 ## Layout
 
