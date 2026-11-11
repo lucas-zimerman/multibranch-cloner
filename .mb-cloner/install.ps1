@@ -108,5 +108,5 @@ Keep it idempotent and add a short comment above each step.
 ------------------------------------------------------------
 
 Then start working with:
-  .\mb.cmd clone <folder>     (see .\mb.cmd help)
+  ./mb clone <folder>     (see ./mb help)
 "@ | Write-Host

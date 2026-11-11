@@ -46,28 +46,10 @@ irm https://raw.githubusercontent.com/lucas-zimerman/multibranch-cloner/main/.mb
 
 This writes `.mb-cloner\data.ps1` and `.mb-cloner\env.local.ps1` (git-ignored). Put your repo setup in `post_clone_setup` (a PowerShell function) in `env.local.ps1`.
 
-### Invoking it
+Usage is the same as on Linux/macOS, e.g. `./mb clone <folder>` (see [Usage](#usage)). In PowerShell `./mb` runs `mb.ps1`; in Git Bash it runs the bash script. `mb update` on Windows updates the files listed in `.mb-cloner\manifest.windows`.
 
-Run `mb` from the install folder. How you call it depends on the shell:
-
-| Shell | Command | Notes |
-|---|---|---|
-| cmd | `mb clone <folder>` | runs `mb.cmd` |
-| PowerShell | `.\mb.cmd clone <folder>` | recommended: `mb.cmd` starts PowerShell with `-ExecutionPolicy Bypass`, so it works even when scripts are disabled |
-| PowerShell | `.\mb clone <folder>` | runs `mb.ps1` directly; needs an execution policy that allows local scripts (e.g. `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`) |
-| Git Bash | `./mb clone <folder>` | uses the bash scripts, not the Windows ones |
-
-`mb.cmd` prefers PowerShell 7 (`pwsh`) and falls back to Windows PowerShell. Add the install folder to your `PATH` to call `mb` from anywhere.
-
-The commands are the same as on Linux/macOS:
-
-```powershell
-.\mb.cmd clone <folder>   # clone into <folder> on a branch named <folder>, then start the agent
-.\mb.cmd open <folder>    # start the agent inside an existing clone
-.\mb.cmd list             # clones with last access, branch and PR
-.\mb.cmd clear [-y]       # remove clones whose PR was merged
-.\mb.cmd update [-y]      # updates the Windows files listed in .mb-cloner\manifest.windows
-```
+- **cmd:** use `mb` or `.\mb` (cmd doesn't accept `./`); this runs `mb.cmd`.
+- **"running scripts is disabled":** Windows PowerShell 5.1 blocks scripts by default. Either allow local scripts once with `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`, or use `.\mb.cmd`, which starts PowerShell with `-ExecutionPolicy Bypass`.
 
 Requires `git` and `gh` (for `list` and `clear`). The tab title is set via the window title (Windows Terminal, conhost, VS Code); the tab color can't be set from a script on Windows, so `tab_color` is stored but unused there. Setting the title also sets `CLAUDE_CODE_DISABLE_TERMINAL_TITLE=1` so Claude Code keeps the title instead of replacing it.
 
