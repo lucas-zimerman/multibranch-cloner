@@ -1,0 +1,8 @@
+$repo = 'username/reponame'
+$repo_url = "https://github.com/$repo"
+$tab_title_prefix = 'Title'
+$tab_color = 'green'
+$git_name = 'Your Name'
+$git_email = 'you@example.com'
+$agent_name = 'claude'
+$agent_invoke_name = 'claude'

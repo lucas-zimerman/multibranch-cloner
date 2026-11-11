@@ -1,0 +1,13 @@
+mb.ps1
+mb.cmd
+.mb-cloner/manifest.windows
+.mb-cloner/install.ps1
+.mb-cloner/shared.ps1
+.mb-cloner/data.example.ps1
+.mb-cloner/env.example.ps1
+.mb-cloner/windows/terminal.ps1
+.mb-cloner/commands/clone.ps1
+.mb-cloner/commands/open.ps1
+.mb-cloner/commands/list.ps1
+.mb-cloner/commands/clear.ps1
+.mb-cloner/commands/update.ps1
