@@ -89,7 +89,7 @@ set_var agent_invoke_name "$(ask "Command to invoke the agent (e.g. claude)")"
 
 echo "Wrote $target"
 
-# Generate env.local.sh from env.example.sh (holds post_clone_setup), add the Konsole loader if needed, and load it
+# Generate env.local.sh from env.example.sh (holds post_clone_setup), add the Konsole/macOS loader if needed, and load it
 env_local="$dir/env.local.sh"
 if [ -e "$env_local" ]; then
   echo "env.local.sh already exists, keeping it."
@@ -100,6 +100,10 @@ fi
 if [ -n "${KONSOLE_DBUS_SESSION:-}" ] && ! grep -q 'kde/konsole.sh' "$env_local"; then
   printf '\nsource "$(dirname "${BASH_SOURCE[0]}")/kde/konsole.sh"\n' >> "$env_local"
   echo "Added kde/konsole.sh to env.local.sh"
+fi
+if [ "$(uname -s)" = "Darwin" ] && ! grep -q 'macos/console.sh' "$env_local"; then
+  printf '\nsource "$(dirname "${BASH_SOURCE[0]}")/macos/console.sh"\n' >> "$env_local"
+  echo "Added macos/console.sh to env.local.sh"
 fi
 # shellcheck source=/dev/null
 source "$env_local"
