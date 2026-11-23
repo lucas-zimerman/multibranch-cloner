@@ -5,6 +5,7 @@ mb
 .mb-cloner/data.example.sh
 .mb-cloner/env.example.sh
 .mb-cloner/kde/konsole.sh
+.mb-cloner/macos/console.sh
 .mb-cloner/commands/clone.sh
 .mb-cloner/commands/open.sh
 .mb-cloner/commands/list.sh
